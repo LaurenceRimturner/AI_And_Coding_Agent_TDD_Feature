@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { filterBooks, removeBook, toggleRead } from "./books";
+import { filterBooks, removeBook, sortBooks, toggleRead } from "./books";
 import BookList from "./components/BookList";
+import ReadingProgress from "./components/ReadingProgress";
 import Stats from "./components/Stats";
 import { initialBooks } from "./data";
 import type { Book, GenreFilter } from "./types";
+
+type SortKey = "none" | "title" | "author" | "rating";
 
 export default function App() {
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [genre, setGenre] = useState<GenreFilter>("all");
   const [query, setQuery] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("none");
 
-  const visibleBooks = filterBooks(books, { genre, query });
+  const filteredBooks = filterBooks(books, { genre, query });
+  const visibleBooks =
+    sortKey === "none" ? filteredBooks : sortBooks(filteredBooks, sortKey);
 
   function handleToggleRead(id: string) {
     setBooks(toggleRead(books, id));
@@ -45,8 +51,21 @@ export default function App() {
             <option value="non-fiction">Non-fiction</option>
           </select>
         </label>
+        <label>
+          Sort by
+          <select
+            value={sortKey}
+            onChange={(event) => setSortKey(event.target.value as SortKey)}
+          >
+            <option value="none">Original order</option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="rating">Rating</option>
+          </select>
+        </label>
       </div>
       <Stats books={books} />
+      <ReadingProgress books={books} />
       <BookList
         books={visibleBooks}
         onToggleRead={handleToggleRead}
