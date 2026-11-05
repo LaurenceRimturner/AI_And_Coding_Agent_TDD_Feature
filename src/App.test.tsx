@@ -48,4 +48,43 @@ describe("App", () => {
     expect(within(stats).queryByText("NaN")).toBeNull();
     expect(stats).toHaveTextContent("Average rating: 4");
   });
+
+  test("shows the reading progress", () => {
+    render(<App />);
+    expect(screen.getByText("2 of 5 books read (40 %)")).toBeInTheDocument();
+  });
+
+  test("sorts the books with the 'Sort by' select", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const titles = () =>
+      screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+
+    await user.selectOptions(screen.getByLabelText("Sort by"), "title");
+    expect(titles()).toEqual([
+      "Dune",
+      "Gone Girl",
+      "Neuromancer",
+      "Sapiens",
+      "The Hobbit",
+    ]);
+
+    await user.selectOptions(screen.getByLabelText("Sort by"), "rating");
+    expect(titles()).toEqual([
+      "Dune",
+      "The Hobbit",
+      "Neuromancer",
+      "Gone Girl",
+      "Sapiens",
+    ]);
+
+    await user.selectOptions(screen.getByLabelText("Sort by"), "none");
+    expect(titles()).toEqual([
+      "Dune",
+      "The Hobbit",
+      "Gone Girl",
+      "Neuromancer",
+      "Sapiens",
+    ]);
+  });
 });
